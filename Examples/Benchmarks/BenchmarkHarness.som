@@ -26,7 +26,7 @@ BenchmarkHarness = (
     passed a list of benchmarks to run (class names) as arguments. It will
     run each of them and output single as well as a total."
     
-    | total benchmarkClass numIterations innerIterations printAll doGC |
+    | total benchmarkClass numIterations innerIterations printAll doGC veryStartGcStats |
     
     benchmarkClass: class = ( benchmarkClass := class )
     printAll: aBool = ( printAll := aBool )
@@ -39,6 +39,9 @@ BenchmarkHarness = (
         args length < 2 ifTrue: [ ^ self printUsage ].
         
         self initialize.
+
+        veryStartGcStats := system gcStats.
+
         self processArguments: args.
 
         self runBenchmark.
@@ -115,6 +118,7 @@ BenchmarkHarness = (
     
         [ i < numIterations ] whileTrue: [
             | startTime endTime runTime endGcStats startGcStats startCompTime endCompTime |
+
             startGcStats := system gcStats.
             startCompTime := system totalCompilationTime.
             startTime := system ticks.
@@ -125,6 +129,8 @@ BenchmarkHarness = (
             endTime     := system ticks.
             endGcStats  := system gcStats.
             endCompTime := system totalCompilationTime.
+
+            i == 0 ifTrue: [ startGcStats := veryStartGcStats ].
 
             runTime := endTime - startTime.
             printAll ifTrue: [
